@@ -1,0 +1,248 @@
+#Original
+python main_finetune_segmentation.py \
+    --model vit_huge_patch14 \
+    --finetune /media/data_hdd1/shanhefu/outputs/panomae_pretrain/panomae_pretrain_mask0.6-0.9_16*32_2e-4_epoch300/checkpoint-160.pth \
+    --data_path /home/shanhefu/CVRG-Pano/train \
+    --val_data_path /home/shanhefu/CVRG-Pano/test \
+    --output_dir /media/data_hdd1/shanhefu/outputs/finetune/segmentation_CVRG_Pano/sagementation_mask0.6-0.9_16*32_3.2e-3_decay_huge_cnn_16_CE_4_view_8class \
+    --log_dir /media/data_hdd1/shanhefu/outputs/finetune/segmentation_CVRG_Pano/sagementation_mask0.6-0.9_16*32_3.2e-3_decay_huge_cnn_16_CE_4_view_8class \
+    --grid_height 16 \
+    --batch_size 4 \
+    --accum_iter 1 \
+    --epochs 100 \
+    --warmup_epochs 10 \
+    --blr 2e-1 \
+    --pano_h 832 \
+    --pano_w 1664 \
+    --nb_classes 21 \
+    --clip_grad 1.0 \
+    --layer_decay 0.65 \
+    --weight_decay 0.05 \
+    --drop_path 0.2 \
+    --dist_eval \
+    --num_workers 10
+
+#stanford
+python main_stanford_segmentation.py \
+    --model vit_huge_patch14 \
+    --finetune /media/data_hdd1/shanhefu/outputs/panomae_pretrain/indoor/panomae_pretrain_mask0.6-0.9_16*32_2e-4_epoch300_128_huge_hybrid/checkpoint-240.pth \
+    --data_path /home/shanhefu/Stanford2D3D \
+    --val_data_path /home/shanhefu/Stanford2D3D \
+    --output_dir /media/data_hdd1/shanhefu/outputs/finetune/segmentation_stanford/sagementation_mask0.6-0.9_16*32_3.2e-3_decay_huge_1024_cnn_16_CE_4_hybrid_view1 \
+    --log_dir /media/data_hdd1/shanhefu/outputs/finetune/segmentation_stanford/sagementation_mask0.6-0.9_16*32_3.2e-3_decay_huge_1024_cnn_16_CE_4_hybrid_view1 \
+    --grid_height 16 \
+    --batch_size 4 \
+    --accum_iter 1 \
+    --epochs 100 \
+    --warmup_epochs 10 \
+    --blr 2e-1 \
+    --pano_h 1024 \
+    --pano_w 2048 \
+    --nb_classes 14 \
+    --clip_grad 1.0 \
+    --layer_decay 0.65 \
+    --weight_decay 0.05 \
+    --drop_path 0.2 \
+    --dist_eval \
+    --num_workers 10
+
+#noadaptive masking
+python main_finetune_segmentation.py \
+    --model vit_huge_patch14 \
+    --finetune /media/data_hdd1/shanhefu/outputs/panomae_pretrain/panomae_pretrain_mask0.6-0.9_16*32_2e-4_epoch300_noadaptivemaking/checkpoint-160.pth \
+    --data_path /media/data_hdd2/shanhefu/CVRG-Pano/train \
+    --val_data_path /media/data_hdd2/shanhefu/CVRG-Pano/test \
+    --output_dir /media/data_hdd1/shanhefu/outputs/finetune/segmentation_CVRG_Pano/sagementation_mask0.6-0.9_16*32_3.2e-3_decay_huge_cnn_16_CE_4_noadaptivemasking \
+    --log_dir /media/data_hdd1/shanhefu/outputs/finetune/segmentation_CVRG_Pano/sagementation_mask0.6-0.9_16*32_3.2e-3_decay_huge_cnn_16_CE_4_noadaptivemasking \
+    --grid_height 16 \
+    --batch_size 4 \
+    --accum_iter 1 \
+    --epochs 100 \
+    --warmup_epochs 5 \
+    --blr 2e-1 \
+    --pano_h 832 \
+    --pano_w 1664 \
+    --nb_classes 8 \
+    --clip_grad 1.0 \
+    --layer_decay 0.65 \
+    --weight_decay 0.05 \
+    --drop_path 0.2 \
+    --dist_eval \
+    --num_workers 10
+
+#masking0.75
+python main_finetune_segmentation.py \
+    --model vit_huge_patch14 \
+    --finetune /media/data_hdd1/shanhefu/outputs/panomae_pretrain/panomae_pretrain_mask0.75_16*32_2e-4_epoch300/checkpoint-180.pth \
+    --data_path /media/data_hdd2/shanhefu/CVRG-Pano/train \
+    --val_data_path /media/data_hdd2/shanhefu/CVRG-Pano/test \
+    --output_dir /media/data_hdd1/shanhefu/outputs/finetune/segmentation_CVRG_Pano/sagementation_mask0.75_16*32_3.2e-3_decay_huge_cnn_16_CE_4 \
+    --log_dir /media/data_hdd1/shanhefu/outputs/finetune/segmentation_CVRG_Pano/sagementation_mask0.75_16*32_3.2e-3_decay_huge_cnn_16_CE_4 \
+    --grid_height 16 \
+    --batch_size 4 \
+    --accum_iter 1 \
+    --epochs 100 \
+    --warmup_epochs 5 \
+    --blr 2e-1 \
+    --pano_h 832 \
+    --pano_w 1664 \
+    --nb_classes 8 \
+    --clip_grad 1.0 \
+    --layer_decay 0.65 \
+    --weight_decay 0.05 \
+    --drop_path 0.2 \
+    --dist_eval \
+    --num_workers 10
+
+#rotation
+python eval_rotation.py \
+    --model vit_huge_patch14 \
+    --grid_height 16 \
+    --pano_h 832 \
+    --pano_w 1664 \
+    --val_data_path /media/data_hdd2/shanhefu/CVRG-Pano/test \
+    --checkpoint /media/data_hdd1/shanhefu/outputs/finetune/segmentation/sagementation_mask0.6-0.9_16*32_5e-4_decay_huge_new_16_new_512/checkpoint-99.pth
+
+python eval_spherical.py \
+    --model vit_huge_patch14 \
+    --grid_height 16 \
+    --pano_h 832 \
+    --pano_w 1664 \
+    --val_data_path /media/data_hdd2/shanhefu/CVRG-Pano/test \
+    --checkpoint /media/data_hdd1/shanhefu/outputs/finetune/segmentation/sagementation_mask0.6-0.9_16*32_1e-3_decay_huge_selfattention_16_ce_512/checkpoint-99.pth
+
+python eval_hard_classes_panomae.py \
+    --val_data_path /media/data_hdd2/shanhefu/CVRG-Pano/test \
+    --checkpoint /media/data_hdd1/shanhefu/outputs/finetune/segmentation/sagementation_mask0.6-0.9_16*32_1e-3_decay_huge_selfattention_16_ce_512/checkpoint-99.pth \
+    --model vit_huge_patch14 \
+    --grid_height 16 \
+    --pano_h 832 \
+    --pano_w 1664 \
+    --nb_classes 8
+
+python eval_ensemble.py \
+    --val_data_path /media/data_hdd2/shanhefu/CVRG-Pano/test \
+    --ckpt_base /media/data_hdd1/shanhefu/outputs/finetune/segmentation/mae_16*32_1e-3_decay_huge_16_ce_512/checkpoint-99.pth \
+    --ckpt_pano /media/data_hdd1/shanhefu/outputs/finetune/segmentation/sagementation_mask0.6-0.9_16*32_1e-3_decay_huge_selfattention_16_ce_512/checkpoint-99.pth \
+    --model vit_huge_patch14 \
+    --grid_height 16 \
+    --pano_h 832 \
+    --pano_w 1664 \
+    --nb_classes 8
+
+#cvrg
+python test_pano_cvrg.py \
+    --val_data_path /media/data_hdd2/shanhefu/CVRG-Pano/test \
+    --resume /media/data_hdd1/shanhefu/outputs/finetune/segmentation_CVRG_Pano/sagementation_mask0.6-0.9_16*32_3.2e-3_decay_huge_selfattention_cnn_16_CE_4/checkpoint-99.pth \
+    --model vit_huge_patch14 \
+    --grid_height 16 \
+    --pano_h 832 \
+    --pano_w 1664 \
+    --nb_classes 8 \
+    --output_dir /media/data_hdd1/shanhefu/outputs/finetune/segmentation_CVRG_Pano/result_pano_mask0.6-0.9_16*32_3.2e-3_decay_huge_selfattention_cnn_16_CE_4
+
+#stanford
+python test_pano_stanford_gpu.py \
+    --val_data_path /media/data_hdd2/shanhefu/Stanford2D3D/area_5a/pano \
+    --resume /media/data_hdd1/shanhefu/outputs/finetune/segmentation_stanford/sagementation_mask0.6-0.9_16*32_3.2e-3_decay_huge_1024_cnn_16_CE_4_outdoor/checkpoint-99.pth \
+    --model vit_huge_patch14 \
+    --grid_height 16 \
+    --pano_h 1024 \
+    --pano_w 2048 \
+    --nb_classes 14 \
+    --output_dir /media/data_hdd1/shanhefu/outputs/finetune/segmentation_stanford/result_pano_mask0.6-0.9_16*32_3.2e-3_decay_huge_cnn_16_CE_4
+
+#test
+python main_stanford_segmentation_6ch.py \
+    --model vit_huge_patch14 \
+    --finetune /media/data_hdd1/shanhefu/outputs/panomae_pretrain/outdoor/panomae_pretrain_mask0.6-0.9_16*32_4e-4_epoch300_128_huge_6ch/checkpoint-80.pth\
+    --data_path /home/shanhefu/Stanford2D3D \
+    --val_data_path /home/shanhefu/Stanford2D3D \
+    --output_dir /media/data_hdd1/shanhefu/outputs/finetune/segmentation_stanford/sagementation_mask0.6-0.9_16*32_3.2e-3_decay_huge_1024_nocnn_16_CE_4_hybrid_view_6ch \
+    --log_dir /media/data_hdd1/shanhefu/outputs/finetune/segmentation_stanford/sagementation_mask0.6-0.9_16*32_3.2e-3_decay_huge_1024_nocnn_16_CE_4_hybrid_view_6ch \
+    --grid_height 16 \
+    --batch_size 4 \
+    --accum_iter 1 \
+    --epochs 100 \
+    --warmup_epochs 5 \
+    --blr 2e-1 \
+    --pano_h 1024 \
+    --pano_w 2048 \
+    --nb_classes 14 \
+    --clip_grad 1.0 \
+    --layer_decay 0.65 \
+    --weight_decay 0.05 \
+    --drop_path 0.2 \
+    --dist_eval \
+    --num_workers 10
+
+python main_finetune_segmentation_6ch.py \
+    --model vit_huge_patch14 \
+    --finetune /media/data_hdd1/shanhefu/outputs/panomae_pretrain/outdoor/panomae_pretrain_mask0.6-0.9_16*32_4e-4_epoch300_128_huge_6ch/checkpoint-80.pth \
+    --data_path /home/shanhefu/CVRG-Pano/train \
+    --val_data_path /home/shanhefu/CVRG-Pano/test \
+    --output_dir /media/data_hdd1/shanhefu/outputs/finetune/segmentation/sagementation_mask0.6-0.9_16*32_3.2e-3_decay_huge_1024_3dcnn_16_CE_4_hybrid_view_6ch \
+    --log_dir /media/data_hdd1/shanhefu/outputs/finetune/segmentation/sagementation_mask0.6-0.9_16*32_3.2e-3_decay_huge_1024_3dcnn_16_CE_4_hybrid_view_6ch \
+    --grid_height 16 \
+    --batch_size 4 \
+    --accum_iter 1 \
+    --epochs 100 \
+    --warmup_epochs 5 \
+    --blr 2e-1 \
+    --pano_h 1024 \
+    --pano_w 2048 \
+    --nb_classes 21 \
+    --clip_grad 1.0 \
+    --layer_decay 0.65 \
+    --weight_decay 0.05 \
+    --drop_path 0.2 \
+    --dist_eval \
+    --num_workers 10
+
+#hybrid stanford
+python main_stanford_segmentation.py \
+    --model vit_huge_patch14 \
+    --finetune /media/data_hdd1/shanhefu/outputs/panomae_pretrain/hybrid/panomae_pretrain_mask0.6-0.9_16*32_2e-4_epoch300_256_huge_hybrid_augment/checkpoint-299.pth \
+    --data_path /home/shanhefu/Stanford2D3D \
+    --val_data_path /home/shanhefu/Stanford2D3D \
+    --output_dir /media/data_hdd1/shanhefu/outputs/finetune/segmentation_stanford/sagementation_mask0.6-0.9_16*32_3.2e-3_decay_huge_1024_cnn_16_CE_4_hybridrotationall \
+    --log_dir /media/data_hdd1/shanhefu/outputs/finetune/segmentation_stanford/sagementation_mask0.6-0.9_16*32_3.2e-3_decay_huge_1024_cnn_16_CE_4_hybridrotationall \
+    --grid_height 16 \
+    --batch_size 4 \
+    --accum_iter 1 \
+    --epochs 100 \
+    --warmup_epochs 10 \
+    --blr 2e-1 \
+    --pano_h 1024 \
+    --pano_w 2048 \
+    --nb_classes 14 \
+    --clip_grad 1.0 \
+    --layer_decay 0.65 \
+    --weight_decay 0.05 \
+    --drop_path 0.2 \
+    --dist_eval \
+    --num_workers 10
+
+#CVRG-Pano
+python main_finetune_segmentation.py \
+    --model vit_huge_patch14 \
+    --finetune /media/data_hdd1/shanhefu/outputs/panomae_pretrain/hybrid/panomae_pretrain_mask0.6-0.9_16*32_2e-4_epoch300_256_huge_hybrid_augment/checkpoint-299.pth \
+    --data_path /media/data_hdd2/shanhefu/CVRG-Pano/train \
+    --val_data_path /media/data_hdd2/shanhefu/CVRG-Pano/test \
+    --output_dir /media/data_hdd1/shanhefu/outputs/finetune/segmentation_CVRG_Pano/sagementation_mask0.6-0.9_16*32_3.2e-3_decay_huge_cnn_16_CE_4_view_8class_hybridrotationall \
+    --log_dir /media/data_hdd1/shanhefu/outputs/finetune/segmentation_CVRG_Pano/sagementation_mask0.6-0.9_16*32_3.2e-3_decay_huge_cnn_16_CE_4_view_8class_hybridrotationall \
+    --grid_height 16 \
+    --batch_size 4 \
+    --accum_iter 1 \
+    --epochs 100 \
+    --warmup_epochs 10 \
+    --blr 2e-1 \
+    --pano_h 832 \
+    --pano_w 1664 \
+    --nb_classes 8 \
+    --clip_grad 1.0 \
+    --layer_decay 0.65 \
+    --weight_decay 0.05 \
+    --drop_path 0.2 \
+    --dist_eval \
+    --num_workers 10

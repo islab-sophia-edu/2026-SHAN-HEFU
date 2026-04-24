@@ -1,0 +1,349 @@
+#pre train
+python main_pretrain.py \
+  --batch_size 88 \
+  --model mae_vit_huge_patch14 \
+  --mask_ratio 0.75 \
+  --data_path /media/data_hdd/shanhefu/sun360/sun360_outdoor/ \
+  --output_dir /outputs/
+
+python main_pretrain.py \
+  --batch_size 88 \
+  --model mae_vit_huge_patch14 \
+  --mask_ratio 0.75 \
+  --data_path /media/data_hdd/shanhefu/ImageNet1k/ \
+  --output_dir /outputs/
+
+#Pretrain UNet
+python main_pretrain_UNet.py \
+    --device cuda \
+    --seed 42 \
+    --mae_model mae_vit_huge_patch14 \
+    --mae_checkpoint_path ./pre-train/mae_pretrain_vit_huge.pth \
+    --data_path /media/data_hdd/shanhefu/ImageNet1k/ \
+    --output_dir /media/data_hdd/shanhefu/outputs/mae-unet-training \
+    --log_dir /media/data_hdd/shanhefu/logs/mae-unet-training \
+    --epochs 100 \
+    --batch_size 25 \
+    --lr 1e-4 \
+    --warmup_epoch 2 \
+    --image_size 224
+
+#Pretrain Dit
+python main_pretrain_Dit.py \
+    --device cuda \
+    --seed 42 \
+    --mae_model mae_vit_base_patch16 \
+    --resume /media/data_hdd/shanhefu/outputs/mae-dit-training/checkpoint-40000.pth \
+    --mae_checkpoint_path ./pre-train/mae_pretrain_vit_base.pth \
+    --data_path /media/data_hdd/shanhefu/ImageNet1k/ \
+    --output_dir /media/data_hdd/shanhefu/outputs/mae-dit-training \
+    --log_dir /media/data_hdd/shanhefu/logs/mae-dit-training \
+    --epochs 100 \
+    --batch_size 30 \
+    --lr 1e-4 \
+    --warmup_epoch 10 \
+    --image_size 224
+
+python main_pretrain_Dit.py \
+    --device cuda \
+    --seed 42 \
+    --mae_model mae_vit_huge_patch14 \
+    --resume /media/data_hdd/shanhefu/outputs/mae-dit-training/checkpoint-40000.pth \
+    --mae_checkpoint_path ./pre-train/mae_pretrain_vit_huge.pth \
+    --data_path /media/data_hdd/shanhefu/ImageNet1k/ \
+    --output_dir /media/data_hdd/shanhefu/outputs/mae-dit-training \
+    --log_dir /media/data_hdd/shanhefu/logs/mae-dit-training \
+    --epochs 100 \
+    --batch_size 20 \
+    --lr 1e-4 \
+    --warmup_epoch 10 \
+    --image_size 224
+
+#fine tune(classification)
+python main_finetune.py \
+    --model vit_huge_patch14 \
+    --finetune ./pre-train/mae_pretrain_vit_huge.pth \
+    --data_path /media/data_hdd/shanhefu/sun360/sun360_outdoor_classification/ \
+    --output_dir ./outputs/output_sun360_classification \
+    \
+    --nb_classes 10 \
+    --batch_size 16 \
+    --epochs 50 \
+    --blr 5e-4 \
+    --layer_decay 0.65 \
+    \
+    --dist_eval \
+    --log_dir ./output_sun360_classification
+
+#fine tune(mas)(classification)
+python main_finetune_pano_mae.py \
+    --model vit_huge_patch14 \
+    --finetune ./pre-train/mae_pretrain_vit_huge.pth \
+    --data_path /media/data_hdd/shanhefu/sun360/sun360_outdoor_segement \
+    --output_dir ./outputs/output_sun360_segment \
+    \
+    --nb_classes 10 \
+    --batch_size 16 \
+    --epochs 50 \
+    --blr 5e-4 \
+    --layer_decay 0.65 \
+    \
+    --dist_eval \
+    --log_dir ./output_sun360_classification
+
+#pre-train(mas)(reconstruction)
+python main_pretrain_PanoMAE.py \
+    --num_workers 8 \
+    --model vit_huge_patch14 \
+    --finetune ./pre-train/mae_pretrain_vit_huge.pth \
+    --data_path /home/shanhefu/sun360_outdoor/train \
+    --val_data_path /home/shanhefu/sun360_outdoor/test \
+    --output_dir /media/data_hdd1/shanhefu/outputs/panomae_pretrain/panomae_pretrain_mask0.6-0.9_8*16_2e-4_epoch500 \
+    --log_dir /media/data_hdd1/shanhefu/logs/panomae_pretrain/panomae_pretrain_mask0.6-0.9_8*16_2e-4_epoch500 \
+    --grid_height 8 \
+    --warmup_epochs 40 \
+    --epochs 500 \
+    --batch_size 32 \
+    --accum_iter 16 \
+    --use_horizontal_roll \
+    --multiscale_sampling \
+    --dynamic_mask_ratio \
+    --norm_pix_loss \
+    --eval_freq 1 \
+    --weight_decay 0.1 \
+    --clip_grad 1 \
+    --blr 2e-4
+
+#16*32 dynamic_mask_ratio
+python main_pretrain_PanoMAE.py \
+    --num_workers 10 \
+    --model vit_base_patch16 \
+    --finetune ./pre-train/mae_pretrain_vit_base.pth \
+    --data_path /home/shanhefu/sun360_outdoor/train \
+    --val_data_path /home/shanhefu/sun360_outdoor/test \
+    --output_dir /media/data_hdd1/shanhefu/outputs/panomae_pretrain/panomae_pretrain_mask0.6-0.9_16*32_e-4_epoch300_128_base \
+    --log_dir /media/data_hdd1/shanhefu/logs/panomae_pretrain/panomae_pretrain_mask0.6-0.9_16*32_4e-4_epoch300_128_base \
+    --grid_height 16 \
+    --warmup_epochs 40 \
+    --epochs 300 \
+    --batch_size 32 \
+    --accum_iter 32 \
+    --multiscale_sampling \
+    --dynamic_mask_ratio \
+    --use_horizontal_roll \
+    --norm_pix_loss \
+    --eval_freq 1 \
+    --weight_decay 0.1 \
+    --clip_grad 1 \
+    --blr 1e-4
+
+#16*32 mask_ratio
+python main_pretrain_PanoMAE.py \
+    --resume /media/data_hdd1/shanhefu/outputs/panomae_pretrain/panomae_pretrain_mask0.75_16*32_2e-4_epoch300_0.75masking/checkpoint-40.pth \
+    --num_workers 8 \
+    --model vit_huge_patch14 \
+    --finetune ./pre-train/mae_pretrain_vit_huge.pth \
+    --data_path /home/shanhefu/sun360_outdoor/train \
+    --val_data_path /home/shanhefu/sun360_outdoor/test \
+    --output_dir /media/data_hdd1/shanhefu/outputs/panomae_pretrain/panomae_pretrain_mask0.75_16*32_2e-4_epoch300_0.75masking \
+    --log_dir /media/data_hdd1/shanhefu/logs/panomae_pretrain/panomae_pretrain_mask0.75_16*32_2e-4_epoch300_0.75masking \
+    --grid_height 16 \
+    --warmup_epochs 40 \
+    --epochs 300 \
+    --batch_size 8 \
+    --accum_iter 16 \
+    --multiscale_sampling \
+    --mask_ratio 0.75 \
+    --use_horizontal_roll \
+    --norm_pix_loss \
+    --eval_freq 1 \
+    --weight_decay 0.1 \
+    --clip_grad 1 \
+    --blr 4e-4
+
+#16*32 no_adaptive_masking & dynamic_masking_ratio
+python main_pretrain_PanoMAE.py \
+    --num_workers 8 \
+    --model vit_huge_patch14 \
+    --finetune ./pre-train/mae_pretrain_vit_huge.pth \
+    --data_path /home/shanhefu/sun360_outdoor/train \
+    --val_data_path /home/shanhefu/sun360_outdoor/test \
+    --output_dir /media/data_hdd1/shanhefu/outputs/panomae_pretrain/panomae_pretrain_mask0.6-0.9_16*32_2e-4_epoch300_noadaptivemaking \
+    --log_dir /media/data_hdd1/shanhefu/logs/panomae_pretrain/panomae_pretrain_mask0.6-0.9_16*32_2e-4_epoch300_noadaptivemaking \
+    --grid_height 16 \
+    --warmup_epochs 40 \
+    --epochs 300 \
+    --batch_size 8 \
+    --accum_iter 16 \
+    --multiscale_sampling \
+    --dynamic_mask_ratio \
+    --no_adaptive_masking \
+    --use_horizontal_roll \
+    --norm_pix_loss \
+    --eval_freq 1 \
+    --weight_decay 0.1 \
+    --clip_grad 1 \
+    --blr 4e-4
+
+#pre-tain(mas)(use resume to reconstruction)
+python main_pretrain_PanoMAE.py \
+    --num_workers 4 \
+    --model vit_huge_patch14 \
+    --resume /media/data_hdd/shanhefu/sun360/outputs/output_panomae_reconstruction_8*16_dynamic_img_size_5e-4_epoch500/checkpoint-370.pth \
+    --data_path /home/shanhefu/sun360_outdoor/train \
+    --val_data_path /home/shanhefu/sun360_outdoor/test \
+    --output_dir /media/data_hdd/shanhefu/sun360/outputs/output_panomae_reconstruction_8*16_dynamic_img_size_5e-4_epoch500 \
+    --log_dir /media/data_hdd/shanhefu/sun360/logs/output_panomae_reconstruction_8*16_dynamic_img_size_5e-4_epoch500 \
+    --grid_height 8 \
+    --warmup_epochs 40 \
+    --epochs 300 \
+    --batch_size 32 \
+    --accum_iter 16 \
+    --multiscale_sampling \
+    --dynamic_mask_ratio \
+    --norm_pix_loss \
+    --eval_freq 1 \
+    --weight_decay 0.1 \
+    --clip_grad 1 \
+    --blr 5e-5
+
+#fine tune(generative)(use remuse to continue finetune)(vit-huge&sun360)
+python main_generative_panoramic_finetune.py \
+    --model mae_vit_huge_patch14 \
+    --resume ./output_sun360_generative_finetune/checkpoint-139.pth \
+    --finetune /home/shanhefu/mas/pre-train/mae_pretrain_vit_huge.pth \
+    --data_path /media/data_hdd/shanhefu/sun360/sun360_outdoor/ \
+    --output_dir ./outputs/output_sun360_generative_finetune \
+    \
+    --mask_ratio 0.75 \
+    --blr 1e-5 \
+    --weight_decay 0.05 \
+    --batch_size 96 \
+    --epochs 500
+
+#fine tune(generative)(use remuse to continue finetune)(vit&ImageNet1k)
+python main_generative_imagenet_finetune.py \
+    --model mae_vit_huge_patch14 \
+    --finetune /home/shanhefu/mas/pre-train/mae_pretrain_vit_huge.pth \
+    --data_path /media/data_hdd/shanhefu/ImageNet1k \
+    --output_dir ./outputs/output_imagenet_finetune \
+    \
+    --mask_ratio 0.75 \
+    --blr 1e-5 \
+    --weight_decay 0.05 \
+    --batch_size 96 \
+    --epochs 500
+
+python main_generative_imagenet_finetune.py \
+    --model mae_vit_base_patch16 \
+    --finetune /home/shanhefu/mas/pre-train/mae_pretrain_vit_base.pth \
+    --data_path /media/data_hdd/shanhefu/ImageNet1k \
+    --output_dir ./outputs/output_imagenet_finetune \
+    \
+    --mask_ratio 0.75 \
+    --blr 1e-5 \
+    --weight_decay 0.05 \
+    --batch_size 400 \
+    --epochs 500
+
+#visualize graphics
+python visualize_pano_mae.py \
+    --model vit_huge_patch14 \
+    --data_path /media/data_hdd/shanhefu/sun360/sun360_outdoor/test/\
+    --grid_height 8 \
+    --batch_size 1 \
+    --mask_ratio 0.75 \
+    --output_dir /media/data_hdd1/shanhefu/outputs/ \
+    --resume /media/data_hdd1/shanhefu/outputs/panomae_pretrain/panomae_pretrain_mask0.6-0.9_8*16_2e-4_epoch500/checkpoint-120.pth
+
+python visualize_pano_mae.py \
+    --model vit_huge_patch14 \
+    --image_path /media/data_hdd/shanhefu/sun360/sun360_outdoor/test/pano_aabaxhefhnumua.jpg \
+    --checkpoint_path /media/data_hdd/shanhefu/sun360/outputs/output_panomae_reconstruction_8*16/checkpoint-0.pth \
+    --mask_ratio 0.75 \
+    --grid_height 8 \
+    --output_dir /media/data_hdd/shanhefu/sun360/outputs/pano_mae_8*16/ \
+    --device cpu
+
+#enter to mae_python_env
+conda activate mae_env
+
+#back to train
+tmux attach -t 1
+crtl+b d
+crtl+c #stop training
+
+#back to finetune
+tmux attach -t 1
+crtl+b d
+crtl+c #stop training
+
+#imagenet1k Validation images
+wget https://image-net.org/data/ILSVRC/2012/ILSVRC2012_img_val.tar
+
+#untar
+tar -xvf <xxxxxxx.tar>
+
+#model_mae原本
+Block(embed_dim, num_heads, mlp_ratio, qkv_bias=True, qk_scale=None, norm_layer=norm_layer)
+
+#untar all file
+find . -name "*.tar" | xargs -n 1 -P 8 tar -xvf
+
+#start training(1k)
+python main_pretrain.py \
+  --batch_size 88 \
+  --model mae_vit_base_patch16 \
+  --mask_ratio 0.75 \
+  --data_path /media/data_hdd/shanhefu/ImageNet1k/train \
+  --output_dir output
+
+#hybrid dynamic
+python main_pretrain_PanoMAE.py \
+    --num_workers 6 \
+    --model vit_huge_patch14 \
+    --finetune ./pre-train/mae_pretrain_vit_huge.pth \
+    --data_path /home/shanhefu/hybrid/train \
+    --val_data_path /home/shanhefu/hybrid/test \
+    --output_dir /media/data_hdd1/shanhefu/outputs/panomae_pretrain/hybrid/panomae_pretrain_mask0.6-0.9_16*32_2e-4_epoch300_256_huge_hybrid_augment \
+    --log_dir /media/data_hdd1/shanhefu/logs/panomae_pretrain/hybrid/panomae_pretrain_mask0.6-0.9_16*32_2e-4_epoch300_256_huge_hybrid_augment \
+    --grid_height 16 \
+    --warmup_epochs 30 \
+    --epochs 300 \
+    --batch_size 8 \
+    --accum_iter 32 \
+    --multiscale_sampling \
+    --dynamic_mask_ratio \
+    --norm_pix_loss \
+    --eval_freq 1 \
+    --weight_decay 0.1 \
+    --clip_grad 1 \
+    --pano_h 1024 \
+    --pano_w 2048 \
+    --blr 2e-4
+
+#dynamic 6ch
+python main_pretrain_PanoMAE_6ch.py \
+    --resume /media/data_hdd1/shanhefu/outputs/panomae_pretrain/outdoor/panomae_pretrain_mask0.6-0.9_16*32_4e-4_epoch300_128_huge_6ch/checkpoint-60.pth \
+    --num_workers 6 \
+    --model vit_huge_patch14 \
+    --finetune ./pre-train/mae_pretrain_vit_huge.pth \
+    --data_path /home/shanhefu/hybrid/train \
+    --val_data_path /home/shanhefu/hybrid/test \
+    --output_dir /media/data_hdd1/shanhefu/outputs/panomae_pretrain/outdoor/panomae_pretrain_mask0.6-0.9_16*32_4e-4_epoch300_128_huge_6ch \
+    --log_dir /media/data_hdd1/shanhefu/logs/panomae_pretrain/outdoor/panomae_pretrain_mask0.6-0.9_16*32_4e-4_epoch300_128_huge_6ch \
+    --grid_height 16 \
+    --warmup_epochs 40 \
+    --epochs 300 \
+    --batch_size 4 \
+    --accum_iter 32 \
+    --multiscale_sampling \
+    --dynamic_mask_ratio \
+    --use_horizontal_roll \
+    --norm_pix_loss \
+    --eval_freq 1 \
+    --weight_decay 0.1 \
+    --clip_grad 1 \
+    --pano_h 1024 \
+    --pano_w 2048 \
+    --blr 8e-4

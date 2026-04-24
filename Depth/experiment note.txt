@@ -1,0 +1,105 @@
+#stanford
+python main_finetune_depth.py \
+    --model vit_huge_patch14 \
+    --finetune /media/data_hdd1/shanhefu/outputs/panomae_pretrain/indoor/panomae_pretrain_mask0.6-0.9_16*32_2e-4_epoch300_128_huge_hybrid/checkpoint-240.pth \
+    --data_path /home/shanhefu/Stanford2D3D \
+    --val_data_path /home/shanhefu/Stanford2D3D \
+    --output_dir /media/data_hdd1/shanhefu/outputs/finetune/depth_stanford/depth_mask0.6-0.9_16*32_3.2e-3_decay_huge_1024_cnn_16_4_l1_hybrid_view \
+    --log_dir /media/data_hdd1/shanhefu/outputs/finetune/depth_stanford/depth_mask0.6-0.9_16*32_3.2e-3_decay_huge_1024_cnn_16_l1_4_hybrid_view \
+    --grid_height 16 \
+    --batch_size 4 \
+    --accum_iter 1 \
+    --epochs 100 \
+    --warmup_epochs 10 \
+    --blr 2e-1 \
+    --pano_h 1024 \
+    --pano_w 2048 \
+    --clip_grad 1.0 \
+    --layer_decay 0.65 \
+    --weight_decay 0.05 \
+    --drop_path 0.2 \
+    --dist_eval \
+    --num_workers 10
+
+#noadaptive masking
+python main_finetune_depth.py \
+    --model vit_huge_patch14 \
+    --finetune /media/data_hdd1/shanhefu/outputs/panomae_pretrain/panomae_pretrain_mask0.6-0.9_16*32_2e-4_epoch300_noadaptivemaking/checkpoint-160.pth \
+    --data_path /home/shanhefu/Stanford2D3D \
+    --val_data_path /home/shanhefu/Stanford2D3D \
+    --output_dir /media/data_hdd1/shanhefu/outputs/finetune/depth_stanford/depth_mask0.6-0.9_16*32_2e-1_decay_huge_1024_cnn_16_L1_hybrid_noadaptive \
+    --log_dir /media/data_hdd1/shanhefu/outputs/finetune/depth_stanford/depth_mask0.6-0.9_16*32_2e-1_decay_huge_1024_cnn_16_L1_hybrid_noadaptive \
+    --grid_height 16 \
+    --batch_size 4 \
+    --accum_iter 1 \
+    --epochs 100 \
+    --warmup_epochs 5 \
+    --blr 2e-1 \
+    --pano_h 1024 \
+    --pano_w 2048 \
+    --clip_grad 1.0 \
+    --layer_decay 0.65 \
+    --weight_decay 0.05 \
+    --drop_path 0.2 \
+    --dist_eval \
+    --num_workers 10
+
+#masking0.75
+python main_finetune_depth.py \
+    --model vit_huge_patch14 \
+    --finetune /media/data_hdd1/shanhefu/outputs/panomae_pretrain/panomae_pretrain_mask0.75_16*32_2e-4_epoch300/checkpoint-180.pth \
+    --data_path /home/shanhefu/Stanford2D3D \
+    --val_data_path /home/shanhefu/Stanford2D3D \
+    --output_dir /media/data_hdd1/shanhefu/outputs/finetune/depth_stanford/depth_mask0.75_16*32_2e-1_decay_huge_1024_cnn_16_L1_hybrid_view \
+    --log_dir /media/data_hdd1/shanhefu/outputs/finetune/depth_stanford/depth_mask0.75_16*32_2e-1_decay_huge_1024_cnn_16_L1_hybrid_view \
+    --grid_height 16 \
+    --batch_size 4 \
+    --accum_iter 1 \
+    --epochs 100 \
+    --warmup_epochs 5 \
+    --blr 2e-1 \
+    --pano_h 1024 \
+    --pano_w 2048 \
+    --clip_grad 1.0 \
+    --layer_decay 0.65 \
+    --weight_decay 0.05 \
+    --drop_path 0.2 \
+    --dist_eval \
+    --num_workers 10
+
+python visualize_depth.py \
+  --resume /media/data_hdd1/shanhefu/outputs/finetune/depth_stanford/depth_mask0.6-0.9_16*32_3.2e-3_decay_huge_1024_2dcnn_16_l1_hybrid_view/checkpoint-99.pth \
+  --val_data_path /home/shanhefu/Stanford2D3D \
+  --pano_h 1024 --pano_w 2048 --grid_height 16 \
+  --output_dir /media/data_hdd1/shanhefu/outputs/finetune/depth_stanford//depth_mask0.6-0.9_16*32_3.2e-3_decay_huge_1024_2dcnn_16_l1_hybrid_view_result \
+  --num_samples 10
+
+python visualize_depth.py \
+  --resume /media/data_hdd1/shanhefu/outputs/finetune/depth_stanford/depth_mask0.6-0.9_16*32_3.2e-3_decay_huge_1024_cnn_16_4_l1_hybridall_test1/checkpoint-80.pth \
+  --val_data_path /home/shanhefu/Stanford2D3D \
+  --pano_h 1024 --pano_w 2048 --grid_height 16 \
+  --output_dir /media/data_hdd1/shanhefu/outputs/finetune/depth_stanford//depth_mask0.6-0.9_16*32_3.2e-3_decay_huge_1024_2dcnn_16_l1_hybrid_view_result \
+  --num_samples 10
+
+#test hybrid
+python main_finetune_depth.py \
+    --model vit_huge_patch14 \
+    --finetune /media/data_hdd1/shanhefu/outputs/panomae_pretrain/hybrid/panomae_pretrain_mask0.6-0.9_16*32_2e-4_epoch300_256_huge_hybrid_augment/checkpoint-299.pth \
+    --data_path /home/shanhefu/Stanford2D3D \
+    --val_data_path /home/shanhefu/Stanford2D3D \
+    --output_dir /media/data_hdd1/shanhefu/outputs/finetune/depth_stanford/depth_mask0.6-0.9_16*32_2.5e-4_decay_huge_1024_cnn_16_32_l1_hybridrotationall_cliff10 \
+    --log_dir /media/data_hdd1/shanhefu/outputs/finetune/depth_stanford/depth_mask0.6-0.9_16*32_2.5e-4_decay_huge_1024_cnn_16_l1_32_hybridrotationall_cliff10 \
+    --grid_height 16 \
+    --batch_size 4 \
+    --accum_iter 8 \
+    --epochs 100 \
+    --warmup_epochs 10 \
+    --blr 2e-3 \
+    --pano_h 1024 \
+    --pano_w 2048 \
+    --clip_grad 1.0 \
+    --layer_decay 0.65 \
+    --weight_decay 0.05 \
+    --drop_path 0.2 \
+    --dist_eval \
+    --num_workers 10

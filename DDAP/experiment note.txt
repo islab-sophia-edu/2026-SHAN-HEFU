@@ -1,0 +1,17 @@
+python main_PanoDIT.py \
+    --panomae_ckpt /media/data_hdd1/shanhefu/outputs/panomae_pretrain/hybrid/panomae_pretrain_mask0.6-0.9_16*32_2e-4_epoch300_256_huge_hybrid_augment/checkpoint-299.pth \
+    --data_path /home/shanhefu/hybrid/train \
+    --val_data_path /home/shanhefu/hybrid/test \
+    --output_dir /media/data_hdd1/shanhefu/outputs/panodit/panodit_huge_1024x2048_16_128_1e-4 \
+    --log_dir /media/data_hdd1/shanhefu/logs/panodit/panodit_huge_1024x2048_16_128_1e-4 \
+    --grid_height 16 \
+    --pano_h 1024 \
+    --pano_w 2048 \
+    --patch_size 128 \
+    --layer_decay 0.65 \
+    --epochs 100 \
+    --batch_size 1 \
+    --accum_iter 128 \
+    --eval_freq 10 \
+    --lr 1e-4 \
+    --num_workers 8

@@ -1,0 +1,112 @@
+#no misup
+python main_PanoMAE_classification.py \
+    --model vit_huge_patch14 \
+    --finetune /media/data_hdd1/shanhefu/outputs/panomae_pretrain/panomae_pretrain_mask0.6-0.9_16*32_2e-4_epoch300/checkpoint-160.pth \
+    --data_path /media/data_hdd/shanhefu/sun360/sun360_outdoor_classification/train \
+    --val_data_path /media/data_hdd/shanhefu/sun360/sun360_outdoor_classification/test \
+    --output_dir /media/data_hdd1/shanhefu/outputs/finetune/classification/classification_mask0.6-0.9_16*32_8e-3_decay_huge_512_view \
+    --log_dir /media/data_hdd1/shanhefu/outputs/finetune/classification/classification_mask0.6-0.9_16*32_8e-3_decay_huge_512_view \
+    --grid_height 16 \
+    --batch_size 8 \
+    --accum_iter 64 \
+    --epochs 100 \
+    --warmup_epochs 5 \
+    --blr 4e-3 \
+    --clip_grad 1.0 \
+    --layer_decay 0.65 \
+    --weight_decay 0.05 \
+    --drop_path 0.2 \
+    --reprob 0.25 \
+    --mixup 0.8 \
+    --cutmix 1.0 \
+    --global_pool \
+    --dist_eval \
+    --num_workers 6
+
+#rotation
+python main_PanoMAE_classification_rotation.py \
+    --model vit_huge_patch14 \
+    --finetune /media/data_hdd1/shanhefu/outputs/panomae_pretrain/panomae_pretrain_mask0.6-0.9_16*32_2e-4_epoch300/checkpoint-160.pth \
+    --train_data_path /media/data_hdd/shanhefu/sun360/sun360_outdoor_classification/train \
+    --val_data_path /media/data_hdd/shanhefu/sun360/sun360_outdoor_classification/test \
+    --output_dir /media/data_hdd1/shanhefu/outputs/finetune/classification/huge_ft_v5a \
+    --grid_height 16 \
+    --batch_size 8 \
+    --accum_iter 64 \
+    --epochs 100 \
+    --warmup_epochs 5 \
+    --head_lr 1e-3 \
+    --encoder_lr 1e-5 \
+    --layer_decay 0.65 \
+    --weight_decay 0.05 \
+    --drop_path 0.2 \
+    --clip_grad 1.0 \
+    --global_pool \
+    --num_workers 10
+
+#rotation legacy less data augment -90,90 -180,180
+python main_PanoMAE_classification_rotation_legacy.py \
+    --model vit_huge_patch14 \
+    --finetune /media/data_hdd1/shanhefu/outputs/panomae_pretrain/panomae_pretrain_mask0.6-0.9_16*32_2e-4_epoch300/checkpoint-160.pth \
+    --train_data_path /media/data_hdd/shanhefu/sun360/sun360_outdoor_classification/train \
+    --val_data_path /media/data_hdd/shanhefu/sun360/sun360_outdoor_classification/test \
+    --output_dir /media/data_hdd1/shanhefu/outputs/finetune/classification/huge_ft_v6 \
+    --grid_height 16 \
+    --batch_size 8 \
+    --accum_iter 64 \
+    --epochs 100 \
+    --warmup_epochs 5 \
+    --head_lr 1e-3 \
+    --encoder_lr 1e-5 \
+    --layer_decay 0.65 \
+    --weight_decay 0.05 \
+    --drop_path 0.2 \
+    --clip_grad 1.0 \
+    --global_pool \
+    --num_workers 10
+
+#rotation models D-C
+python main_PanoMAE_classification_rotation_legacy.py \
+    --model vit_huge_patch14 \
+    --finetune /media/data_hdd1/shanhefu/outputs/panomae_pretrain/panomae_pretrain_mask0.6-0.9_16*32_2e-4_epoch300/checkpoint-160.pth \
+    --train_data_path /media/data_hdd/shanhefu/sun360/sun360_outdoor_classification/train \
+    --val_data_path /media/data_hdd/shanhefu/sun360/sun360_outdoor_classification/test \
+    --output_dir /media/data_hdd1/shanhefu/outputs/finetune/classification/huge_ft_v6_DC \
+    --grid_height 16 \
+    --batch_size 8 \
+    --accum_iter 64 \
+    --epochs 100 \
+    --warmup_epochs 5 \
+    --head_lr 1e-3 \
+    --encoder_lr 1e-5 \
+    --layer_decay 0.65 \
+    --weight_decay 0.05 \
+    --drop_path 0.2 \
+    --clip_grad 1.0 \
+    --global_pool \
+    --num_workers 10
+
+#base
+python main_PanoMAE_classification.py \
+    --model vit_base_patch16 \
+    --finetune /media/data_hdd1/shanhefu/outputs/panomae_pretrain/panomae_pretrain_mask0.6-0.9_16*32_4e-4_epoch300_128_base/checkpoint-100.pth \
+    --data_path /media/data_hdd/shanhefu/sun360/sun360_outdoor_classification/train \
+    --val_data_path /media/data_hdd/shanhefu/sun360/sun360_outdoor_classification/test \
+    --output_dir /media/data_hdd1/shanhefu/outputs/finetune/classification/classification_mask0.6-0.9_16*32_2.5e-4_focalloss_base_512 \
+    --log_dir /media/data_hdd1/shanhefu/outputs/finetune/classification/classification_mask0.6-0.9_16*32_2.5e-4_focalloss_base_512 \
+    --grid_height 16 \
+    --batch_size 32 \
+    --accum_iter 32 \
+    --epochs 100 \
+    --warmup_epochs 5 \
+    --blr 3e-4 \
+    --clip_grad 1.0 \
+    --layer_decay 0.65 \
+    --weight_decay 0.05 \
+    --drop_path 0.2 \
+    --reprob 0.25 \
+    --mixup 0.8 \
+    --cutmix 1.0 \
+    --global_pool \
+    --dist_eval \
+    --num_workers 16

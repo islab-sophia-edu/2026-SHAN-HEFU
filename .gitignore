@@ -1,0 +1,13 @@
+# Ignore large pre-train folder
+pre-train/
+geometry_cache/
+fine-tune/
+
+# Ignore all python cache
+**/__pycache__/
+*.py[cod]
+*$py.class
+
+# Optional: Ignore other common junk
+.DS_Store
+.ipynb_checkpoints/
