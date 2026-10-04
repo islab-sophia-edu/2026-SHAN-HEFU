@@ -18,53 +18,63 @@ class ViewEmbedder(nn.Module):
     
 #Random Fourier Features
 class AnglePositionalEncoding(nn.Module):
-    """Implements Sphere Position Embedding with optional geometric bias."""
-    def __init__(self, d_model: int, num_fourier_features: int = 256, geometric_bias: bool = True):
+    def __init__(
+        self,
+        d_model: int,
+        num_fourier_features: int = 256,
+        geometric_bias: bool = True,
+        max_frequency: float = 4.0,
+    ):
         super().__init__()
+
         if d_model < 2 * num_fourier_features:
             num_fourier_features = d_model // 2
+
         self.num_fourier_features = num_fourier_features
-        
+
         if geometric_bias:
-            self._init_geometric_fourier_weights()
+            fourier_weights = self._build_stratified_fourier_weights(
+                num_fourier_features,
+                max_frequency=max_frequency,
+            )
+            self.fourier_weights = nn.Parameter(fourier_weights)
         else:
-            self.register_parameter('fourier_weights', nn.Parameter(torch.randn(self.num_fourier_features, 3)))
+            self.fourier_weights = nn.Parameter(
+                torch.randn(num_fourier_features, 3) * 0.5
+            )
 
-        if 2 * self.num_fourier_features != d_model:
-            self.output_proj = nn.Linear(2 * self.num_fourier_features, d_model)
-        else:
-            self.output_proj = nn.Identity()
+        self.mlp = nn.Sequential(
+            nn.Linear(2 * num_fourier_features, d_model),
+            nn.GELU(),
+            nn.Linear(d_model, d_model),
+        )
 
-    def _init_geometric_fourier_weights(self):
-        """Initializes Fourier weights with a heuristic based on spherical harmonics."""
-        l_max = int(math.sqrt(self.num_fourier_features))
-        frequencies = []
-        for l in range(l_max + 1):
-            for m in range(-l, l + 1):
-                if len(frequencies) >= self.num_fourier_features: break
-                freq = torch.tensor([
-                    l * math.cos(m * math.pi / (l + 1)) if l > 0 else 1.0,
-                    l * math.sin(m * math.pi / (l + 1)) if l > 0 else 0.0,
-                    l * 0.5 if l > 0 else 0.0
-                ], dtype=torch.float32)
-                frequencies.append(freq)
-            if len(frequencies) >= self.num_fourier_features: break
-        
-        while len(frequencies) < self.num_fourier_features:
-            frequencies.append(torch.randn(3))
-        
-        fourier_weights = torch.stack(frequencies[:self.num_fourier_features])
-        self.register_parameter('fourier_weights', nn.Parameter(fourier_weights))
+    @staticmethod
+    def _build_stratified_fourier_weights(
+        num_features: int,
+        max_frequency: float,
+    ) -> torch.Tensor:
+        dirs = torch.randn(num_features, 3)
+        dirs = torch.nn.functional.normalize(dirs, dim=-1)
+
+        freqs = torch.linspace(0.5, max_frequency, num_features).unsqueeze(-1)
+        return dirs * freqs
 
     def forward(self, angles: torch.Tensor) -> torch.Tensor:
-        lon_rad, lat_rad = torch.deg2rad(angles[..., 0]), torch.deg2rad(angles[..., 1])
+        lon_rad = torch.deg2rad(angles[..., 0])
+        lat_rad = torch.deg2rad(angles[..., 1])
+
         x = torch.cos(lat_rad) * torch.cos(lon_rad)
-        y = torch.cos(lat_rad) * -torch.sin(lon_rad)
+        y = -torch.cos(lat_rad) * torch.sin(lon_rad)
         z = torch.sin(lat_rad)
+
         coords_3d = torch.stack([x, y, z], dim=-1)
-        p_k = torch.matmul(coords_3d, self.fourier_weights.T)
-        fourier_features = torch.cat([torch.cos(p_k), torch.sin(p_k)], dim=-1)
-        return self.output_proj(fourier_features)
+        coords_3d = torch.nn.functional.normalize(coords_3d, dim=-1)
+
+        phase = 2.0 * math.pi * torch.matmul(coords_3d, self.fourier_weights.T)
+        fourier_features = torch.cat([torch.sin(phase), torch.cos(phase)], dim=-1)
+
+        return self.mlp(fourier_features)
 
 class PanoramicMAE(nn.Module):
     """Panoramic MAE with built-in adaptive masking and Sphere Position Embedding."""
