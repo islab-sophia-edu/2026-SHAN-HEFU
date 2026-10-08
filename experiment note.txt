@@ -300,13 +300,13 @@ python main_pretrain.py \
 
 #hybrid dynamic
 python main_pretrain_PanoMAE.py \
-    --num_workers 6 \
+    --num_workers 10 \
     --model vit_huge_patch14 \
     --finetune ./pre-train/mae_pretrain_vit_huge.pth \
     --data_path /home/shanhefu/hybrid/train \
     --val_data_path /home/shanhefu/hybrid/test \
-    --output_dir /media/data_hdd1/shanhefu/outputs/panomae_pretrain/hybrid/panomae_pretrain_mask0.6-0.9_16*32_2e-4_epoch300_256_huge_hybrid_augment \
-    --log_dir /media/data_hdd1/shanhefu/logs/panomae_pretrain/hybrid/panomae_pretrain_mask0.6-0.9_16*32_2e-4_epoch300_256_huge_hybrid_augment \
+    --output_dir /media/shareA1/shanhefu/outputs/panomae_pretrain/hybrid/panomae_pretrain_mask0.6-0.9_16*32_2e-4_epoch300_256_huge_hybrid_augment \
+    --log_dir /media/shareA1/shanhefu/outputs/panomae_pretrain/hybrid/panomae_pretrain_mask0.6-0.9_16*32_2e-4_epoch300_256_huge_hybrid_augment \
     --grid_height 16 \
     --warmup_epochs 30 \
     --epochs 300 \
@@ -316,8 +316,8 @@ python main_pretrain_PanoMAE.py \
     --dynamic_mask_ratio \
     --norm_pix_loss \
     --eval_freq 1 \
-    --weight_decay 0.1 \
-    --clip_grad 1 \
+    --weight_decay 0.05 \
+    --clip_grad 3 \
     --pano_h 1024 \
     --pano_w 2048 \
     --blr 2e-4
@@ -347,3 +347,129 @@ python main_pretrain_PanoMAE_6ch.py \
     --pano_h 1024 \
     --pano_w 2048 \
     --blr 8e-4
+
+#hybrid dynamic 3dpe
+python main_pretrain_PanoMAE_3dpe.py \
+    --num_workers 10 \
+    --model vit_huge_patch14 \
+    --finetune ./pre-train/mae_pretrain_vit_huge.pth \
+    --data_path /home/shanhefu/hybrid/train \
+    --val_data_path /home/shanhefu/hybrid/test \
+    --output_dir /media/shareA1/shanhefu/outputs/panomae_pretrain/hybrid/panomae_pretrain_mask0.6-0.9_16*32_2e-4_epoch300_256_huge_hybrid_augment_3dpe \
+    --log_dir /media/shareA1/shanhefu/outputs/panomae_pretrain/hybrid/panomae_pretrain_mask0.6-0.9_16*32_2e-4_epoch300_256_huge_hybrid_augment_3dpe \
+    --grid_height 16 \
+    --warmup_epochs 30 \
+    --epochs 300 \
+    --batch_size 8 \
+    --accum_iter 32 \
+    --multiscale_sampling \
+    --dynamic_mask_ratio \
+    --norm_pix_loss \
+    --eval_freq 1 \
+    --weight_decay 0.05 \
+    --clip_grad 3 \
+    --pano_h 1024 \
+    --pano_w 2048 \
+    --blr 2e-4
+
+#2dpe
+python main_pretrain_PanoMAE_2dpe.py \
+    --num_workers 10 \
+    --model vit_huge_patch14 \
+    --finetune ./pre-train/mae_pretrain_vit_huge.pth \
+    --data_path /home/shanhefu/hybrid/train \
+    --val_data_path /home/shanhefu/hybrid/test \
+    --output_dir /media/shareA1/shanhefu/outputs/panomae_pretrain/hybrid/panomae_pretrain_mask0.6-0.9_16*32_2e-4_epoch300_256_huge_hybrid_augment_2dpe \
+    --log_dir /media/shareA1/shanhefu/outputs/panomae_pretrain/hybrid/panomae_pretrain_mask0.6-0.9_16*32_2e-4_epoch300_256_huge_hybrid_augment_2dpe \
+    --grid_height 16 \
+    --warmup_epochs 30 \
+    --epochs 300 \
+    --batch_size 8 \
+    --accum_iter 32 \
+    --multiscale_sampling \
+    --dynamic_mask_ratio \
+    --norm_pix_loss \
+    --eval_freq 1 \
+    --weight_decay 0.05 \
+    --clip_grad 3 \
+    --pano_h 1024 \
+    --pano_w 2048 \
+    --blr 2e-4
+
+#hybrid dynamic gctt
+python main_pretrain_PanoMAE_gctt.py \
+    --num_workers 10 \
+    --model vit_huge_patch14 \
+    --finetune ./pre-train/mae_pretrain_vit_huge.pth \
+    --data_path /home/shanhefu/hybrid/train \
+    --val_data_path /home/shanhefu/hybrid/test \
+    --output_dir /media/shareA1/shanhefu/outputs/panomae_pretrain/hybrid/panomae_pretrain_mask0.6-0.9_16*32_2e-4_epoch300_256_huge_hybrid_augment_1 \
+    --log_dir /media/shareA1/shanhefu/outputs/panomae_pretrain/hybrid/panomae_pretrain_mask0.6-0.9_16*32_2e-4_epoch300_256_huge_hybrid_augment_1 \
+    --grid_height 16 \
+    --warmup_epochs 30 \
+    --epochs 300 \
+    --batch_size 8 \
+    --accum_iter 32 \
+    --multiscale_sampling \
+    --dynamic_mask_ratio \
+    --norm_pix_loss \
+    --eval_freq 1 \
+    --weight_decay 0.05 \
+    --clip_grad 3 \
+    --pano_h 1024 \
+    --pano_w 2048 \
+    --blr 2e-4 \
+    --gctt_gauge_jitter_deg 30.0 \
+    --gctt_local_gauge_jitter_deg 0.0
+
+#hybrid dynamic grid(gctt+grid)
+python main_pretrain_PanoMAE_grid.py \
+    --num_workers 10 \
+    --model vit_huge_patch14 \
+    --finetune ./pre-train/mae_pretrain_vit_huge.pth \
+    --data_path /home/shanhefu/hybrid/train \
+    --val_data_path /home/shanhefu/hybrid/test \
+    --output_dir /media/shareA1/shanhefu/outputs/panomae_pretrain/hybrid/panomae_pretrain_mask0.6-0.9_16*32_2e-4_epoch300_256_huge_hybrid_augment_grid \
+    --log_dir /media/shareA1/shanhefu/outputs/panomae_pretrain/hybrid/panomae_pretrain_mask0.6-0.9_16*32_2e-4_epoch300_256_huge_hybrid_augment_grid \
+    --grid_height 16 \
+    --warmup_epochs 30 \
+    --epochs 300 \
+    --batch_size 8 \
+    --accum_iter 32 \
+    --multiscale_sampling \
+    --dynamic_mask_ratio \
+    --norm_pix_loss \
+    --eval_freq 1 \
+    --weight_decay 0.05 \
+    --clip_grad 3 \
+    --pano_h 1024 \
+    --pano_w 2048 \
+    --blr 2e-4 \
+    --gctt_gauge_jitter_deg 30.0 \
+    --gctt_local_gauge_jitter_deg 0.0
+
+#hybrid dynamic grid(no_adaptive_masking)
+python main_pretrain_PanoMAE_gctt_noadaptive.py \
+    --num_workers 10 \
+    --model vit_huge_patch14 \
+    --finetune ./pre-train/mae_pretrain_vit_huge.pth \
+    --data_path /home/shanhefu/hybrid/train \
+    --val_data_path /home/shanhefu/hybrid/test \
+    --output_dir /media/shareA1/shanhefu/outputs/panomae_pretrain/hybrid/panomae_pretrain_mask0.6-0.9_16*32_2e-4_epoch300_256_huge_hybrid_augment_noadaptive \
+    --log_dir /media/shareA1/shanhefu/outputs/panomae_pretrain/hybrid/panomae_pretrain_mask0.6-0.9_16*32_2e-4_epoch300_256_huge_hybrid_augment_noadaptive \
+    --grid_height 16 \
+    --warmup_epochs 30 \
+    --epochs 300 \
+    --batch_size 8 \
+    --accum_iter 32 \
+    --multiscale_sampling \
+    --dynamic_mask_ratio \
+    --norm_pix_loss \
+    --eval_freq 1 \
+    --weight_decay 0.05 \
+    --clip_grad 3 \
+    --pano_h 1024 \
+    --pano_w 2048 \
+    --blr 2e-4 \
+    --gctt_gauge_jitter_deg 30.0 \
+    --gctt_local_gauge_jitter_deg 0.0

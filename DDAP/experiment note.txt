@@ -1,17 +1,163 @@
-python main_PanoDIT.py \
-    --panomae_ckpt /media/data_hdd1/shanhefu/outputs/panomae_pretrain/hybrid/panomae_pretrain_mask0.6-0.9_16*32_2e-4_epoch300_256_huge_hybrid_augment/checkpoint-299.pth \
-    --data_path /home/shanhefu/hybrid/train \
-    --val_data_path /home/shanhefu/hybrid/test \
-    --output_dir /media/data_hdd1/shanhefu/outputs/panodit/panodit_huge_1024x2048_16_128_1e-4 \
-    --log_dir /media/data_hdd1/shanhefu/logs/panodit/panodit_huge_1024x2048_16_128_1e-4 \
-    --grid_height 16 \
-    --pano_h 1024 \
-    --pano_w 2048 \
-    --patch_size 128 \
-    --layer_decay 0.65 \
-    --epochs 100 \
-    --batch_size 1 \
-    --accum_iter 128 \
-    --eval_freq 10 \
-    --lr 1e-4 \
-    --num_workers 8
+#stage1
+python train_pano_rae.py \
+  --data_path /home/shanhefu/hybrid/train \
+  --val_data_path /home/shanhefu/hybrid/test \
+  --pano_checkpoint /media/shareA1/shanhefu/outputs/panomae_pretrain/hybrid/panomae_pretrain_mask0.6-0.9_16*32_2e-4_epoch300_256_huge_hybrid_augment_gctt/checkpoint-299.pth \
+  --pano_model vit_huge_patch14 \
+  --pano_h 1024 \
+  --pano_w 2048 \
+  --grid_height 16 \
+  --batch_size 16 \
+  --accum_iter 4 \
+  --epochs 100 \
+  --lr 1e-4 \
+  --min_lr 1e-6 \
+  --warmup_epochs 5 \
+  --weight_decay 0.05 \
+  --clip_grad 1.0 \
+  --latent_noise_std 0.0 \
+  --latitude_weighted_loss \
+  --save_every 10 \
+  --preview_every 10 \
+  --output_dir /media/shareA1/shanhefu/outputs/finetune/DDAP/stage1 \
+  --device cuda \
+  --amp \
+  --aug_device cuda \
+  --aug_device cpu --num_workers 16
+
+python compute_pano_latent_stats.py \
+  --data_path /home/shanhefu/hybrid/train \
+  --pano_checkpoint /media/shareA1/shanhefu/outputs/panomae_pretrain/hybrid/panomae_pretrain_mask0.6-0.9_16*32_2e-4_epoch300_256_huge_hybrid_augment_gctt/checkpoint-299.pth \
+  --rae_checkpoint /media/shareA1/shanhefu/outputs/finetune/DDAP/stage1/checkpoint_best.pt \
+  --output /media/shareA1/shanhefu/outputs/finetune/DDAP/stage2_pre \
+  --pano_model vit_huge_patch14 \
+  --pano_h 1024 \
+  --pano_w 2048 \
+  --grid_height 16 \
+  --batch_size 1 \
+  --device cuda \
+  --aug_device cuda \
+  --num_workers 0
+
+#stage2
+python train_pano_dit.py \
+  --data_path /home/shanhefu/hybrid/train \
+  --val_data_path /home/shanhefu/hybrid/test \
+  --pano_checkpoint /media/shareA1/shanhefu/outputs/panomae_pretrain/hybrid/panomae_pretrain_mask0.6-0.9_16*32_2e-4_epoch300_256_huge_hybrid_augment_gctt/checkpoint-299.pth \
+  --rae_checkpoint /media/shareA1/shanhefu/outputs/finetune/DDAP/stage1/checkpoint_best.pt \
+  --latent_stats /media/shareA1/shanhefu/outputs/finetune/DDAP/stage2_pre \
+  --output_dir /media/shareA1/shanhefu/outputs/finetune/DDAP/stage2_2 \
+  --pano_model vit_huge_patch14 \
+  --pano_h 1024 \
+  --pano_w 2048 \
+  --grid_height 16 \
+  --base_hidden_size 1280 \
+  --base_depth 12 \
+  --base_num_heads 16 \
+  --head_hidden_size 2048 \
+  --head_depth 2 \
+  --head_num_heads 16 \
+  --batch_size 8 \
+  --accum_iter 8 \
+  --epochs 100 \
+  --warmup_epochs 10 \
+  --decay_end_epoch 80 \
+  --scheduler_type linear \
+  --lr 1.25e-5 \
+  --min_lr 1e-6 \
+  --weight_decay 0.0 \
+  --clip_grad 1.0 \
+  --time_distribution logit_normal \
+  --loss_guard_ratio 8.0 \
+  --loss_guard_absolute 16.0 \
+  --max_skipped_batches_per_epoch 32 \
+  --ema_decay 0.9995 \
+  --preview_weights raw \
+  --sample_every 10 \
+  --sample_count 1 \
+  --sampling_steps 50 \
+  --solver euler \
+  --eval_every 5 \
+  --eval_samples 4 \
+  --eval_save_samples 2 \
+  --eval_base_times 0.005 0.02 0.05 0.10 \
+  --eval_sampling_steps 50 \
+  --eval_solver euler \
+  --save_every 5 \
+  --log_every 100 \
+  --device cuda \
+  --aug_device cpu \
+  --num_workers 16
+
+#test stage2
+python train_pano_dit.py \
+  --data_path /home/shanhefu/hybrid/train \
+  --pano_checkpoint /media/shareA1/shanhefu/outputs/panomae_pretrain/hybrid/panomae_pretrain_mask0.6-0.9_16*32_2e-4_epoch300_256_huge_hybrid_augment_gctt/checkpoint-299.pth \
+  --rae_checkpoint /media/shareA1/shanhefu/outputs/finetune/DDAP/stage1/checkpoint_best.pt \
+  --output_dir /media/shareA1/shanhefu/outputs/finetune/DDAP/test \
+  --latent_stats /media/shareA1/shanhefu/outputs/finetune/DDAP/stage2_pre \
+  --pano_model vit_huge_patch14 \
+  --pano_h 1024 \
+  --pano_w 2048 \
+  --grid_height 16 \
+  --base_hidden_size 1280 \
+  --base_depth 12 \
+  --base_num_heads 16 \
+  --head_hidden_size 2048 \
+  --head_depth 2 \
+  --head_num_heads 16 \
+  --overfit_one \
+  --overfit_batches_per_epoch 200 \
+  --epochs 10 \
+  --batch_size 1 \
+  --accum_iter 1 \
+  --warmup_epochs 0 \
+  --lr 1e-4 \
+  --min_lr 1e-6 \
+  --weight_decay 0.0 \
+  --clip_grad 1.0 \
+  --ema_decay 0.9995 \
+  --sample_every 1 \
+  --sample_count 1 \
+  --sampling_steps 50 \
+  --solver heun \
+  --preview_weights raw \
+  --save_every 1 \
+  --device cuda \
+  --amp \
+  --aug_device cuda \
+  --aug_device cpu --num_workers 16
+
+#evaluation stage1
+python evaluate_pano_rae_metrics.py \
+  --data_path /home/shanhefu/hybrid/test \
+  --pano_checkpoint /media/shareA1/shanhefu/outputs/panomae_pretrain/hybrid/panomae_pretrain_mask0.6-0.9_16*32_2e-4_epoch300_256_huge_hybrid_augment_gctt/checkpoint-299.pth \
+  --rae_checkpoint /media/shareA1/shanhefu/outputs/finetune/DDAP/stage1/checkpoint_best.pt \
+  --output /media/shareA1/shanhefu/outputs/finetune/DDAP/stage1/rae_metrics.json \
+  --pano_model vit_huge_patch14 \
+  --pano_h 1024 \
+  --pano_w 2048 \
+  --grid_height 16 \
+  --batch_size 1 \
+  --max_samples 100 \
+  --metric_chunk_size 64 \
+  --device cuda \
+  --aug_device cuda \
+  --num_workers 0
+
+#evaluation stage2
+python diagnose_pano_dit_metrics.py \
+  --data_path /home/shanhefu/hybrid/train \
+  --dit_checkpoint /media/shareA1/shanhefu/outputs/finetune/DDAP/test/checkpoint_latest.pt \
+  --pano_checkpoint /media/shareA1/shanhefu/outputs/panomae_pretrain/hybrid/panomae_pretrain_mask0.6-0.9_16*32_2e-4_epoch300_256_huge_hybrid_augment_gctt/checkpoint-299.pth \
+  --rae_checkpoint /media/shareA1/shanhefu/outputs/finetune/DDAP/stage1/checkpoint_best.pt \
+  --output_dir /media/shareA1/shanhefu/outputs/finetune/DDAP/stage2/diagnostics_metrics \
+  --weights raw \
+  --base_times 0.1 0.5 0.9 \
+  --sampling_steps 50 \
+  --solver heun \
+  --compare_pure_noise_to_first_gt \
+  --metric_chunk_size 64 \
+  --device cuda \
+  --aug_device cuda \
+  --num_workers 0
