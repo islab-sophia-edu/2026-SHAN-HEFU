@@ -1,0 +1,148 @@
+--- a/dataset_stanford_normal_gctt.py
++++ b/dataset_stanford_normal_gctt.py
+@@ -10,6 +10,7 @@
+ import torch
+ import torch.nn.functional as F
+ from torch.utils.data import Dataset
++from normal_pose_frame import pose_path_from_normal, world_normals_to_erp
+ from PIL import Image
+ from torchvision import transforms
+ 
+@@ -114,16 +115,15 @@
+         views        : [N, 3, patch_h, patch_w], ImageNet-normalized RGB
+         angles       : [N, 2], degrees, [lon/theta, lat/phi]
+         gauge_angles : [N, 1], degrees, tangent-frame gauge psi_i
+-        normals      : [N, 3, patch_h, patch_w], unit normals; default target frame is global/PanoMAE world
++        normals      : [N, 3, patch_h, patch_w], unit normals in Pose-aligned ERP/ODI frame
+         valid_mask   : [N, 1, patch_h, patch_w], 1 for valid normal pixels
+ 
+     Normal convention:
+         Stanford normal PNGs are 127.5-centered RGB normal images; #808080 is missing mesh.
+         This dataset first converts RGB -> normal vector, applies a configurable
+-        axis permutation/sign, then either keeps the sampled normal in global/PanoMAE coordinates (default)
+-        or projects it into the oriented GCTT local frame [x_g, y_g, n_c].
+-        Global target is the safer default for Stanford pano/normal because the
+-        official pano normals are defined in the global coordinate system.
++        axis permutation/sign to Stanford World XYZ, then transforms each normal
++        using the corresponding official panorama Pose into PanoMAE ERP coordinates.
++        Legacy engine name 'global' refers to its fixed ERP/ODI 3D axes.
+     """
+ 
+     def __init__(self, root_dir: str, grid_height: int = 16, img_size=None, is_train: bool = True,
+@@ -156,6 +156,9 @@
+             raise ValueError("Official Normal axis signs must be +/-1 to preserve angular geometry")
+         self.normal_local_y_sign = float(getattr(args, "normal_local_y_sign", 1.0)) if args is not None else 1.0
+         self.normal_target_frame = str(getattr(args, "normal_target_frame", "global") if args is not None else "global").lower()
++        self.official_normal_coordinate = str(getattr(args, "official_normal_coordinate", "erp")).lower()
++        if self.official_normal_coordinate != "erp":
++            raise ValueError("Only Pose-aligned ERP normal supervision is supported")
+         if self.normal_target_frame != "global":
+             raise ValueError("Official normal GT benchmark requires --normal_target_frame global")
+ 
+@@ -200,7 +203,7 @@
+         print(f"[{'Train' if self.is_train else 'Val'}] Patch Size   : {self.patch_h}x{self.patch_w}")
+         print(f"[{'Train' if self.is_train else 'Val'}] Axis perm/sign: {self.normal_axis_perm} / {self.normal_axis_sign}; local_y_sign={self.normal_local_y_sign} (default +1 => GCTT frame [x_g,y_g,n_c])")
+         print(f"[{'Train' if self.is_train else 'Val'}] Input chans : {self.in_chans} ({'RGB+rayXYZ' if self.in_chans == 6 else 'RGB only'}), ray_coord={self.ray_coord}")
+-        print(f"[{'Train' if self.is_train else 'Val'}] Target frame: {self.normal_target_frame} (global avoids local/gauge label ambiguity)")
++        print(f"[{'Train' if self.is_train else 'Val'}] Target frame: ERP (Pose-aligned official world normals; engine legacy name={self.normal_target_frame})")
+ 
+         self.filenames = self._collect_pairs(debug_limit)
+         print(f"[{'Train' if self.is_train else 'Val'}] Found {len(self.filenames)} RGB/normal pairs.")
+@@ -283,7 +286,8 @@
+                 else:
+                     ok = depth_path is not None
+                 if ok:
+-                    pairs.append({"rgb": rgb_path, "normal": normal_path, "depth": depth_path, "area": area})
++                    pose_path = pose_path_from_normal(normal_path)
++                    pairs.append({"rgb": rgb_path, "normal": normal_path, "depth": depth_path, "pose": str(pose_path), "area": area})
+                     area_pairs += 1
+             print(f"[Area] {area}: RGB={len(rgb_files)}, paired={area_pairs}")
+         if debug_limit:
+@@ -591,7 +595,9 @@
+                 img_pil = self.blur(img_pil)
+             rgb = np.asarray(img_pil)
+             world_normal, valid = self._decode_normal(normal_pil)
+-            rgb, world_normal, valid = self._apply_full_pose3d(rgb, world_normal, valid)
++            erp_normal = world_normals_to_erp(world_normal, item["pose"])
++            erp_normal *= valid[..., None]
++            rgb, world_normal, valid = self._apply_full_pose3d(rgb, erp_normal, valid)
+             angles, gauge_angles = self._make_angles_and_gauges()
+             if self.use_horizontal_roll:
+                 if self.grid_tokenization:
+--- a/engine_normal_gctt.py
++++ b/engine_normal_gctt.py
+@@ -8,6 +8,7 @@
+ import torch.nn.functional as F
+ import torchvision
+ import util.misc as misc
++from normal_pose_frame import pose_path_from_normal, world_normals_to_erp
+ 
+ 
+ def _native_normal_path(batch):
+@@ -653,8 +654,6 @@
+         image = image.convert("RGB")
+         image = image.resize((args.pano_w, args.pano_h), resample=Image.Resampling.NEAREST)
+         raw = np.asarray(image, dtype=np.float32)
+-    if str(getattr(args, "normal_axis_perm", "0,2,1")) == "0,1,2" and str(getattr(args, "normal_axis_sign", "-1,-1,1")) == "1,1,1":
+-        return torch.from_numpy(raw.copy()).permute(2, 0, 1).to(device=device, dtype=torch.float32) / 255.0
+     center = float(getattr(args, "invalid_normal_value", 128))
+     tol = float(getattr(args, "invalid_normal_tolerance", 1.0))
+     valid = ~np.all(np.abs(raw - center) <= tol, axis=2)
+@@ -666,6 +665,8 @@
+     norm = np.linalg.norm(vec, axis=2, keepdims=True)
+     valid &= np.isfinite(norm[..., 0]) & (norm[..., 0] > 1e-4)
+     vec = np.where(valid[..., None], vec / np.maximum(norm, 1e-6), 0.0)
++    vec = world_normals_to_erp(vec, pose_path_from_normal(path))
++    vec *= valid[..., None]
+     tensor = torch.from_numpy(vec.copy()).permute(2, 0, 1).to(device=device, dtype=torch.float32)
+     valid_tensor = torch.from_numpy(valid.copy()).unsqueeze(0).to(device=device)
+     return _normal_to_rgb(tensor, valid_tensor)
+@@ -791,9 +792,9 @@
+     torchvision.utils.save_image(pred_rgb, os.path.join(args.output_dir, f"normal_pred_inverse_odi_epoch_{epoch:03d}.png"))
+     torchvision.utils.save_image(pred_raw, os.path.join(args.output_dir, f"normal_pred_RAW_signed_epoch_{epoch:03d}.png"))
+     torchvision.utils.save_image(pred_yaw180, os.path.join(args.output_dir, f"normal_pred_legacy_yaw180_DIAGNOSTIC_epoch_{epoch:03d}.png"))
+-    torchvision.utils.save_image(target_rgb, os.path.join(args.output_dir, f"normal_gt_official_epoch_{epoch:03d}.png"))
++    torchvision.utils.save_image(target_rgb, os.path.join(args.output_dir, f"normal_gt_official_ERP_epoch_{epoch:03d}.png"))
+     torchvision.utils.save_image(target_rgb_inverse, os.path.join(args.output_dir, f"normal_gt_inverse_odi_diagnostic_epoch_{epoch:03d}.png"))
+-    print(f"Saved inverse-ODI normal pred/gt comparison to {compare_path}")
++    print(f"Saved Pose-aligned ERP normal pred/GT comparison to {compare_path}")
+ 
+ def _normal_perm_sign_candidates(device):
+     import itertools
+--- a/main_finetune_normal_gctt.py
++++ b/main_finetune_normal_gctt.py
+@@ -54,6 +54,8 @@
+                         help="Signs after axis permutation. Use for handedness ablation, e.g. 1,-1,1.")
+     parser.add_argument("--normal_local_y_sign", default=1.0, type=float,
+                         help="+1 means target local normal uses the same GCTT frame as SPE: [x_g, y_g, n_c]. Use -1 only to reproduce the old image-down camera convention [x_g, -y_g, n_c].")
++    parser.add_argument("--official_normal_coordinate", default="erp", choices=["erp"],
++                        help="Convert official Stanford world Normal GT into camera-aligned ERP frame using Pose JSON.")
+     parser.add_argument("--normal_target_frame", default="global", choices=["global"],
+                         help="Default global: train on Stanford pano global normals. local: project targets into GCTT [x_g,y_g,n_c].")
+     parser.add_argument("--w_cos", default=1.0, type=float)
+@@ -302,8 +304,9 @@
+         print("[Normal Frame] Official RGB -> XYZ candidate: [-R, -B, +G] (requires global_xyz audit).")
+     if args.normal_prediction_frame != "stanford":
+         raise ValueError("Canonical XYZ candidate requires --normal_prediction_frame stanford; do not stack legacy_yaw180.")
+-    if args.normal_label_source != "normal" or args.normal_target_frame != "global":
+-        raise ValueError("gctt: only official world-frame pano/normal GT is supported")
++    if args.normal_label_source != "normal" or args.normal_target_frame != "global" or args.official_normal_coordinate != "erp":
++        raise ValueError("gctt: only Pose-aligned ERP normals from official pano/normal PNG are supported")
++    print("[Normal Frame] Pose-aligned ERP supervision: Official PNG -> (-R,-B,+G) world -> inverse official Pose -> PanoMAE ERP")
+     if args.num_workers > 0 and args.aug_device.startswith("cuda"):
+         raise ValueError("CUDA in dataset workers is unsupported: set --aug_device cpu or --num_workers 0")
+     if args.pano_h % args.grid_height or args.pano_w % (2 * args.grid_height):
+@@ -429,6 +432,13 @@
+             print(f"Resuming from checkpoint: {args.resume}")
+         checkpoint = torch.load(args.resume, map_location="cpu", weights_only=False)
+         saved_args = checkpoint.get("args", None)
++        saved_coord = (saved_args.get("official_normal_coordinate") if isinstance(saved_args, dict)
++                       else getattr(saved_args, "official_normal_coordinate", None))
++        if saved_coord != "erp":
++            raise ValueError(
++                f"Fine-tuned Normal checkpoint has official_normal_coordinate={saved_coord!r}; "
++                "do not resume incompatible world-frame labels. Use --finetune with the PanoMAE pretrained encoder."
++            )
+         old_source = (saved_args.get("normal_label_source") if isinstance(saved_args, dict)
+                       else getattr(saved_args, "normal_label_source", None))
+         old_target_frame = (saved_args.get("normal_target_frame") if isinstance(saved_args, dict)

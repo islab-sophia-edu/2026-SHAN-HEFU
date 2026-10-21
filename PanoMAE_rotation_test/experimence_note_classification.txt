@@ -1,0 +1,10 @@
+#classification
+gctt
+python run_rotation.py \
+  --task classification \
+  --variant gctt \
+  --checkpoint /media/shareA1/shanhefu/outputs/finetune/classification/classification_mask0.6-0.9_16*32_8e-3_decay_huge_512_gctt/checkpoint-last.pth \
+  --data_path /media/shareA1/shanhefu/datasets/sun360/sun360_outdoor_classification/test \
+  --grid_height 16 \
+  --num_classes 25 \
+  --output_dir /media/shareA1/shanhefu/outputs/PanoMAE_rotation_test/classification/gctt

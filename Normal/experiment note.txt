@@ -192,7 +192,7 @@ python main_finetune_normal_pb.py \
     --weight_decay 0.05 \
     --drop_path 0.2 \
     --dist_eval \
-    --num_workers 
+    --num_workers 4
     
 #3dpe
 python main_finetune_normal_3dpe.py \
@@ -246,8 +246,8 @@ python main_finetune_normal_grid.py \
     --finetune /media/shareA1/shanhefu/outputs/panomae_pretrain/hybrid/panomae_pretrain_mask0.6-0.9_16*32_2e-4_epoch300_256_huge_hybrid_augment_grid/checkpoint-299.pth \
     --data_path /media/shareA1/shanhefu/datasets/Stanford2D3D \
     --val_data_path /media/shareA1/shanhefu/datasets/Stanford2D3D \
-    --output_dir /media/shareA1/shanhefu/outputs/finetune/normal/stanford2d3d/normal_mask0.6-0.9_16*32_3.2e-4_decay_huge_1024_cnn_16_CE_4_grid \
-    --log_dir /media/shareA1/shanhefu/logs/finetune/normal/stanford2d3d/normal_mask0.6-0.9_16*32_3.2e-4_decay_huge_1024_cnn_16_CE_4_grid \
+    --output_dir /media/shareA1/shanhefu/outputs/finetune/normal/stanford2d3d/normal_mask0.6-0.9_16*32_3.2e-4_decay_huge_1024_cnn_16_CE_4_grid_nopose \
+    --log_dir /media/shareA1/shanhefu/logs/finetune/normal/stanford2d3d/normal_mask0.6-0.9_16*32_3.2e-4_decay_huge_1024_cnn_16_CE_4_grid_nopose \
     --grid_height 16 \
     --batch_size 4 \
     --accum_iter 1 \
@@ -261,6 +261,7 @@ python main_finetune_normal_grid.py \
     --weight_decay 0.05 \
     --drop_path 0.2 \
     --dist_eval \
+    --no_decoder_camera_pose \
     --num_workers 4
 
 #noadaptive
@@ -284,4 +285,5 @@ python main_finetune_normal_noadaptive.py \
     --weight_decay 0.05 \
     --drop_path 0.2 \
     --dist_eval \
+    --no_decoder_camera_pose \
     --num_workers 4

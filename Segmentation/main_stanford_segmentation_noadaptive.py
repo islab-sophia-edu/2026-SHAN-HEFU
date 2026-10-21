@@ -360,6 +360,13 @@ def main(args):
     loss_scaler = NativeScaler()
     criterion = nn.CrossEntropyLoss(ignore_index=255)
 
+    if args.eval and args.resume:
+        print(f"Loading evaluation checkpoint: {args.resume}")
+        checkpoint = torch.load(args.resume, map_location="cpu", weights_only=False)
+        state_dict = checkpoint["model"]
+        model_without_ddp.load_state_dict(state_dict, strict=True)
+        print(f"Checkpoint loaded successfully, epoch={checkpoint.get('epoch', 'unknown')}")
+
     if args.eval:
         test_stats = engine_segmentation.evaluate(data_loader_val, model, device, criterion, args, epoch=args.start_epoch)
         print(f"Eval stats: {test_stats}")

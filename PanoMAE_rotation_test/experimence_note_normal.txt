@@ -1,0 +1,9 @@
+#normal
+gctt
+python run_rotation.py \
+  --task normal \
+  --variant gctt \
+  --checkpoint /media/shareA1/shanhefu/outputs/finetune/normal/stanford2d3d/normal_mask0.6-0.9_16*32_3.2e-4_decay_huge_1024_cnn_16_CE_4_gctt/checkpoint-99.pth \
+  --data_path /media/shareA1/shanhefu/datasets/Stanford2D3D \
+  --grid_height 16 \
+  --output_dir /media/shareA1/shanhefu/outputs/PanoMAE_rotation_test/normal/gctt

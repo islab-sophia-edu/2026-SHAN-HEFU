@@ -1,0 +1,37 @@
+{
+  "2dpe": {
+    "mask_pretrain": "adaptive",
+    "decoder_camera_pose_default": true,
+    "decoder_pose_geometry": "tangent per-patch ray+frame"
+  },
+  "3dpe": {
+    "mask_pretrain": "adaptive",
+    "decoder_camera_pose_default": true,
+    "decoder_pose_geometry": "tangent per-patch ray+frame"
+  },
+  "pb": {
+    "mask_pretrain": "adaptive",
+    "decoder_camera_pose_default": true,
+    "decoder_pose_geometry": "tangent per-patch ray+frame"
+  },
+  "noadaptive": {
+    "mask_pretrain": "fixed0.75",
+    "decoder_camera_pose_default": true,
+    "decoder_pose_geometry": "tangent per-patch ray+frame"
+  },
+  "grid": {
+    "mask_pretrain": "adaptive",
+    "decoder_camera_pose_default": true,
+    "decoder_pose_geometry": "ERP per-pixel ray"
+  },
+  "gctt": {
+    "mask_pretrain": "adaptive",
+    "decoder_camera_pose_default": true,
+    "decoder_pose_geometry": "tangent per-patch ray+frame"
+  },
+  "mae": {
+    "mask_pretrain": "fixed0.75",
+    "decoder_camera_pose_default": false,
+    "decoder_pose_geometry": "ERP per-pixel ray"
+  }
+}

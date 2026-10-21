@@ -1,0 +1,22 @@
+#segmentation
+#CVRG-Pano
+#gctt
+python run_rotation.py \
+  --task segmentation \
+  --variant gctt \
+  --checkpoint /media/shareA1/shanhefu/outputs/finetune/segmentation/CVRG_Pano/sagementation_mask0.6-0.9_16*32_3.2e-3_decay_huge_cnn_16_CE_4_gctt/checkpoint-99.pth \
+  --data_path /media/shareA1/shanhefu/datasets/CVRG-Pano/test \
+  --grid_height 16 \
+  --num_classes 8 \
+  --output_dir /media/shareA1/shanhefu/outputs/PanoMAE_rotation_test/segmentation_CVRG-Pano/gctt
+
+#CVRG-Pano
+#gctt
+python run_rotation.py \
+  --task segmentation \
+  --variant gctt \
+  --checkpoint /media/shareA1/shanhefu/outputs/finetune/segmentation/stanford2d3d/sagementation_mask0.6-0.9_16*32_3.2e-3_decay_huge_1024_cnn_16_CE_4_gctt/checkpoint-99.pth \
+  --data_path /media/shareA1/shanhefu/datasets/Stanford2D3D \
+  --grid_height 16 \
+  --num_classes 14 \
+  --output_dir /media/shareA1/shanhefu/outputs/PanoMAE_rotation_test/segmentation_stanford2d3d/gctt
